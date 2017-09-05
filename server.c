@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include<string.h>
+#include<stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -62,7 +64,21 @@ int main(int argc, char *argv[])
 		}
 
 		printf("Here is the message: %s\n", buffer);
-
+		char str[] = "";
+		strcpy(str, buffer); 
+		const char *a[100];
+		char * pch;
+		pch = strtok (str," ");
+		  int i = 0; 
+		  while (pch != NULL)
+		  {
+		    a[i] = pch; 
+		    i++; 
+		    pch = strtok (NULL, " ");
+		  }
+		printf("si pasa el get\n");
+		printf("%s\n", a[1]); // aqui ya toma del http del browser que quiere despues del puerto
+	
 		n= write(newsockfd, "I got your message",18);
 
 		if (n < 0)
