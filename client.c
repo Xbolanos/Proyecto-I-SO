@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 		error("ERROR connecting");
 
 	}
-	printf("Please enter the message: ");
+	printf("Please enter the file that you want with extension (: ");
 	bzero(buffer,256);
 	fgets(buffer,255,stdin);
 	n= write(sockfd,buffer,strlen(buffer));
