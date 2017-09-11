@@ -20,7 +20,35 @@ void * SendFileToClient(int *arg)
       int connfd=(int)*arg;
       printf("Connection accepted and id: %d\n",connfd);
       printf("Connected to Clent: %s:%d\n",inet_ntoa(c_addr.sin_addr),ntohs(c_addr.sin_port));
-      write(connfd, fname,256); //2 
+      read(connfd, buffer, 256);
+      char str[] = "";
+        strcpy(str, buffer); 
+        const char *a[100];
+        char * pch;
+        pch = strtok (str," ");
+        if (!strcmp(pch, "GET")){
+            browser = 1; 
+            int i = 0; 
+              while (pch != NULL)
+              {
+                a[i] = pch; 
+                i++; 
+                pch = strtok (NULL, " ");
+              }
+              pch = a[1];
+            //estos print se pueden unificar a futuro
+            printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
+        }
+        strcpy(fname, pch);  
+        pch = strtok (fname,"\n");
+        strcpy(fname, pch); 
+        if (browser == 1){
+            pch = strtok (fname,"/");
+            strcpy(fname, pch);  
+        }
+        
+        
+        write(connfd, fname,256); //2 
        
         FILE *fp = fopen(fname,"rb");
         printf("Nombre:%s\n", fname);
@@ -59,15 +87,18 @@ void * SendFileToClient(int *arg)
                     return 0; 
             }
         }
-    fclose(fp);
-    printf("Closing Connection for id: %d\n",connfd);
-    close(connfd);
-    shutdown(connfd,SHUT_WR);
-    printf("end ari socket client\n");
+    if (browser != 1){
+        fclose(fp);
+        printf("Closing Connection for id: %d\n",connfd);
+        close(connfd);
+        shutdown(connfd,SHUT_WR);
+        printf("end ari socket client\n");   
+    }
+    
     return 1;  
     
 }
-
+/*
 void * recieveNameFile(int *arg){
 
     int connfd=(int)*arg;
@@ -113,7 +144,7 @@ void * recieveNameFile(int *arg){
 
 }
 
-
+*/
 
 
 int main(int argc, char *argv[])
@@ -137,7 +168,7 @@ int main(int argc, char *argv[])
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5000);
+    serv_addr.sin_port = htons(5001);
 
     ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
     if(ret<0)
@@ -164,7 +195,7 @@ int main(int argc, char *argv[])
     	  continue;	
     	}
         //err = pthread_create(&tid, NULL, &SendFileToClient, &connfd);
-        recieveNameFile(&connfd); 
+        SendFileToClient(&connfd); 
         
         printf("termino\n");
    }

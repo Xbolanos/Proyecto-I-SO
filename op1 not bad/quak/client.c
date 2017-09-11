@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     /* Initialize sockaddr_in data structure */
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5000); // port
+    serv_addr.sin_port = htons(5001); // port
     char ip[50];
 if (argc < 2) 
 {
