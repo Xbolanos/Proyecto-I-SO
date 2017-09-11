@@ -98,53 +98,6 @@ void * SendFileToClient(int *arg)
     return 1;  
     
 }
-/*
-void * recieveNameFile(int *arg){
-
-    int connfd=(int)*arg;
-    int n= 0, err; 
-      printf("Read!!!\n");
-      printf("Connection accepted and id: %d\n",connfd);
-      printf("Connected to Clent: %s:%d\n",inet_ntoa(c_addr.sin_addr),ntohs(c_addr.sin_port));
-    n= read(connfd, buffer, 256); //1 
-    if( n < 0 )
-        {
-            error("ERROR reading from socket");
-        }
-    else{ // no hubo error so --continua con lo que hace 
-        //muestra el mensaje
-        // ---> todo lo que sigue es para leer que archivo manda si es http
-        char str[] = "";
-        strcpy(str, buffer); 
-        const char *a[100];
-        char * pch;
-        pch = strtok (str," ");
-        if (!strcmp(pch, "GET")){
-            browser = 1; 
-            int i = 0; 
-              while (pch != NULL)
-              {
-                a[i] = pch; 
-                i++; 
-                pch = strtok (NULL, " ");
-              }
-              pch = a[1];
-            //estos print se pueden unificar a futuro
-            printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
-        }
-        strcpy(fname, pch);  
-        pch = strtok (fname,"\n");
-        strcpy(fname, pch); 
-        
-    }
-    
-    err = SendFileToClient(&connfd); 
-    if (err != 0)
-        printf("\ncan't cant send :[%s]", strerror(err));
-
-}
-
-*/
 
 
 int main(int argc, char *argv[])
