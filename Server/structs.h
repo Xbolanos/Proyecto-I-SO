@@ -5,5 +5,7 @@ struct Process
 {
 	int id;
 	char file[100];
-    struct sockaddr_in c_addr;
+	int connfd; 
+	int browser; 
+    //struct sockaddr_in c_addr;
 };
