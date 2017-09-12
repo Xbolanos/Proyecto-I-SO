@@ -1,0 +1,5 @@
+
+
+void fifo(Process process){
+	
+}

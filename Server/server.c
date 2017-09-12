@@ -8,7 +8,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "structs.h"
 #include "http.h"
+#include "fifo.c"
 
 const char delim[]=" \n.";
 struct sockaddr_in c_addr;
@@ -17,6 +19,7 @@ char buffer[256];
 char bigbuffer[10000];
 int browser = 0; 
 char * pch;
+Process process[50];
 
 void * SendFileToClient(int *arg)
 {
@@ -148,11 +151,8 @@ void * SendFileToClient(int *arg)
     return 1;  
     
 }
-
-
-int main(int argc, char *argv[])
-{
-    int connfd = 0,err;
+void connectServer(int argc, char *argv[]){
+	int connfd = 0,err;
     pthread_t tid; 
     struct sockaddr_in serv_addr;
     int listenfd = 0,ret;
@@ -203,5 +203,34 @@ int main(int argc, char *argv[])
         printf("termino\n");
    }
     close(connfd);
+}
+
+int main(int argc, char *argv[])
+{
+   
+    if(argv[1]!= NULL){
+    	
+    	switch (atoi(argv[1])){
+    		case 0:
+    			printf("Sería Fifo\n");
+    			break;
+    		case 1:
+    			printf("Sería FORK\n");
+    			break;
+    		case 2:
+    			printf("Sería Thread\n");
+    			break;
+    		case 3:
+    			printf("Sería P-Thread\n");
+    			break;
+    		default:
+    			printf("Sería Fifo\n");
+    	}
+    	connectServer(argc, argv);			
+
+
+    }else{
+    	printf("Instrucciones\n");
+    } 
     return 0;
 }
