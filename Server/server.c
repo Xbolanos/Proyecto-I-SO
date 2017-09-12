@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include "structs.h"
 #include "http.h"
-#include "fifo.c"
+//#include "fifo.c"
 
 const char delim[]=" \n.";
 struct sockaddr_in c_addr;
@@ -19,7 +19,7 @@ char buffer[256];
 char bigbuffer[10000];
 int browser = 0; 
 char * pch;
-Process process[50];
+//Process process[50];
 
 void * SendFileToClient(int *arg)
 {
@@ -234,3 +234,11 @@ int main(int argc, char *argv[])
     } 
     return 0;
 }
+
+
+    
+    
+    
+     
+    
+    
