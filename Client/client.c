@@ -82,7 +82,7 @@ else
     	}
     long double sz=1;
     /* Receive data in chunks of 256 bytes */
-    while((bytesReceived = read(sockfd, recvBuff, 1024)) > 0)
+    while((bytesReceived = n= recv(sockfd,recvBuff,1024,0)) > 0)
     { 
         sz++;
         gotoxy(0,4);
