@@ -160,7 +160,8 @@ void * SendFileToClient(Process pr)
             {
                 printf("Sending \n");
                 
-                send(p.connfd, buff, nread, 0);
+                send(p.connfd, buff, nread, 0); //3
+                printf("### lo que envia: %s\n", buff);
             }
             if (nread < 1024)
             {
@@ -206,7 +207,7 @@ void connectServer(int argc, char *argv[]){
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5001);
+    serv_addr.sin_port = htons(5000);
 
     ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
     if(ret<0)

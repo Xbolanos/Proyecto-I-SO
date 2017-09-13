@@ -32,7 +32,7 @@ void connectClient(int argc, char *argv[]) {
 
     /* Initialize sockaddr_in data structure */
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5001); // port
+    serv_addr.sin_port = htons(5000); // port
     char ip[50];
 if (argc < 2) 
 {
@@ -75,7 +75,7 @@ else
      
     //strcat(fname,"AK");
     printf("File Name: %s\n",fname);
-    printf("Receiving file...");
+    printf("Receiving file...\n");
      fp = fopen(fname, "ab"); 
         if(NULL == fp)
         {
@@ -84,8 +84,9 @@ else
         }
     long double sz=1;
     /* Receive data in chunks of 256 bytes */
-    while((bytesReceived = n= recv(sockfd,recvBuff,1024,0)) > 0)
+    while((bytesReceived = n= recv(sockfd,recvBuff,1024,0)) > 0) //3 
     { 
+        printf("### lo que recibe: %s\n", recvBuff);
         sz++;
         gotoxy(0,4);
         printf("Received: %llf Mb",(sz/1024));
