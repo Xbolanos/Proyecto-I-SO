@@ -11,7 +11,7 @@
 #include "structs.h"
 #include "http.h"
 #include "fifo.c"
-
+#include "../functions.c"
 extern const char * delim;
 extern struct sockaddr_in c_addr;
 
@@ -38,19 +38,12 @@ void * getRequest(int * arg){
     printf("#1 : lo que el read recibe: %s\n", buffer);
     // disminusa
     strcpy(str, buffer); 
-    pch = strtok (str," ");
+/*    pch = split_string(str, " ", 0); 
     if (!strcmp(pch, "GET")){
-        browser = 1; 
-        int i = 0; 
-          while (pch != NULL)
-          {
-            a[i] = pch; 
-            i++; 
-            pch = strtok (NULL, " ");
-          }
-          pch = a[1];
+        browser =1;
         //estos print se pueden unificar a futuro
-        printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
+        pch = split_string(str, " ", 1); 
+        printf("GET: %s\n", pch);
     }
     
     strcpy(buffer, pch);  
@@ -61,15 +54,34 @@ void * getRequest(int * arg){
     if (browser == 1){
         pch = strtok (buffer,"/");
         strcpy(buffer, pch);  
+    }*/
+
+    pch = strtok (str," ");
+    if (!strcmp(pch, "GET")){
+        browser = 1; 
+        strcpy(str, buffer);
+        pch = split_string(str, " ", 1); 
+        //estos print se pueden unificar a futuro
+        printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
     }
+    
+    strcpy(buffer, pch);  
+    pch = strtok (buffer,"\n");
+    strcpy(buffer, pch); 
+    if (browser == 1){
+        pch = strtok (buffer,"/");
+        strcpy(buffer, pch);  
+    }    
     printf("here is file normal: %s\n", buffer);
     //digamos que aqui se tienen que hacer los processes
     Process p; 
     p.id = 1; 
     strcpy(p.file, buffer); 
     printf("#p.file %s\n", p.file);
-    p.connfd = connfd; 
+    p.connfd = connfd;
+    printf("#browser %d\n",browser); 
     p.browser = browser; 
+    printf("#p.browser %d\n",p.browser ); 
     insert(p); 
     indexProcess++;
 
@@ -176,6 +188,7 @@ void * SendFileToClient(Process pr)
                     printf("Error reading\n");
                     return 0; 
             }
+            sleep(2);
         }
         
         fclose(fp);
@@ -207,7 +220,8 @@ void connectServer(int argc, char *argv[]){
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5000);
+    int port = atoi(argv[2]); 
+    serv_addr.sin_port = htons(port);
 
     ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
     if(ret<0)
@@ -235,6 +249,7 @@ void connectServer(int argc, char *argv[]){
     	}
         getRequest(&connfd);        
         fifo();
+        sleep(10); 
         
         printf("termino\n");
    }

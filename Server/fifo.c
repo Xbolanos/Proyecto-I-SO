@@ -6,7 +6,7 @@ void * SendFileToClient(Process p);
 void fifo(){
 	pid_t  pid;
     
-    pid = fork();
+    //pid = fork();
 	if(process[0]!=NULL){
 		printf("Entro a FIFO\n");
 		Process p = *process[0]; 

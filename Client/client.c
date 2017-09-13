@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+
 void gotoxy(int x,int y)
  {
  printf("%c[%d;%df",0x1B,y,x);
@@ -32,7 +33,8 @@ void connectClient(int argc, char *argv[]) {
 
     /* Initialize sockaddr_in data structure */
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5000); // port
+    int port = atoi(argv[2]); 
+    serv_addr.sin_port = htons(port); // port
     char ip[50];
 if (argc < 2) 
 {
@@ -86,7 +88,7 @@ else
     /* Receive data in chunks of 256 bytes */
     while((bytesReceived = n= recv(sockfd,recvBuff,1024,0)) > 0) //3 
     { 
-        printf("### lo que recibe: %s\n", recvBuff);
+        //printf("### lo que recibe: %s\n", recvBuff);
         sz++;
         gotoxy(0,4);
         printf("Received: %llf Mb",(sz/1024));
