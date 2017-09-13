@@ -69,7 +69,9 @@ else
      /* Create file where data will be stored */
     FILE *fp;
     char fname[256];
-    read(sockfd, fname, 256);
+    read(sockfd, fname, 256); //2
+    printf("#2 %s\n", fname); 
+
      
     //strcat(fname,"AK");
     printf("File Name: %s\n",fname);

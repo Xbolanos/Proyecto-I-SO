@@ -34,8 +34,8 @@ void * getRequest(int * arg){
     printf("Connected to Clent: %s:%d\n",inet_ntoa(c_addr.sin_addr),ntohs(c_addr.sin_port));       
     //-----------the real action --------------
 
-    read(connfd, buffer, 256);
-
+    read(connfd, buffer, 256); //1 
+    printf("#1 : lo que el read recibe: %s\n", buffer);
     // disminusa
     strcpy(str, buffer); 
     pch = strtok (str," ");
@@ -55,15 +55,19 @@ void * getRequest(int * arg){
     
     strcpy(buffer, pch);  
     pch = strtok (buffer,"\n");
+
     strcpy(buffer, pch); 
+
     if (browser == 1){
         pch = strtok (buffer,"/");
         strcpy(buffer, pch);  
     }
+    printf("here is file normal: %s\n", buffer);
     //digamos que aqui se tienen que hacer los processes
     Process p; 
     p.id = 1; 
     strcpy(p.file, buffer); 
+    printf("#p.file %s\n", p.file);
     p.connfd = connfd; 
     p.browser = browser; 
     insert(p); 
@@ -72,8 +76,9 @@ void * getRequest(int * arg){
 }
 
 
-void * SendFileToClient(Process p)
+void * SendFileToClient(Process pr)
 {
+    Process p=(Process)pr;
     char * pch;
     char buffer[256];   
     char bigbuffer[10000]; 
@@ -84,7 +89,9 @@ void * SendFileToClient(Process p)
    /*----------------------------*/
 
     if(p.browser== 0){ // le mando esto para que sepa cual es el archivo a crear 
-        write(connfd, p.file,256); 
+        
+        write(connfd, p.file,256); //2
+        printf("#2 %s\n", p.file);
     } 
    /*//resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo*/
     else{ 

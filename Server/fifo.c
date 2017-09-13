@@ -9,9 +9,11 @@ void fifo(){
     pid = fork();
 	if(process[0]!=NULL){
 		printf("Entro a FIFO\n");
-		
+		Process p = *process[0]; 
 		printf("PID:%d\n", pid);
+		printf("#fifo p.file %s\n", p.file);
 		SendFileToClient(*process[0]);
+
 		
 		delete();
 		printf("%d\n", sizeof(process));
