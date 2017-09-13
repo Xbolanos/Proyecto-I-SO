@@ -10,15 +10,15 @@
 #include <sys/stat.h>
 #include "structs.h"
 #include "http.h"
-//#include "fifo.c"
+#include "fifo.c"
 
-const char * delim=" \n.";
-struct sockaddr_in c_addr;
+extern const char * delim;
+extern struct sockaddr_in c_addr;
 
 
-char * pch;
-int indexProcess = 0; 
-struct Process process[50];
+extern char * pch;
+extern int indexProcess; 
+extern Process *process[50];
 
 
 
@@ -61,18 +61,18 @@ void * getRequest(int * arg){
         strcpy(buffer, pch);  
     }
     //digamos que aqui se tienen que hacer los processes
-    struct Process p; 
+    Process p; 
     p.id = 1; 
     strcpy(p.file, buffer); 
     p.connfd = connfd; 
     p.browser = browser; 
-    process[indexProcess] = p; 
+    insert(p); 
     indexProcess++;
 
 }
 
 
-void * SendFileToClient(struct Process p)
+void * SendFileToClient(Process p)
 {
     char * pch;
     char buffer[256];   
@@ -183,10 +183,8 @@ void * SendFileToClient(struct Process p)
 }
 void connectServer(int argc, char *argv[]){
 	int connfd = 0,err;
-    pthread_t tid; 
     struct sockaddr_in serv_addr;
     int listenfd = 0,ret;
-    char sendBuff[1025];
     int numrv;
     size_t clen=0;
 
@@ -201,7 +199,7 @@ void connectServer(int argc, char *argv[]){
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(5000);
+    serv_addr.sin_port = htons(5001);
 
     ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
     if(ret<0)
@@ -227,9 +225,8 @@ void connectServer(int argc, char *argv[]){
     	  printf("Error in accept\n");
     	  continue;	
     	}
-        //err = pthread_create(&tid, NULL, &SendFileToClient, &connfd);
         getRequest(&connfd);        
-        SendFileToClient(process[indexProcess-1]); 
+        fifo();
         
         printf("termino\n");
    }
