@@ -14,7 +14,8 @@ void gotoxy(int x,int y)
  printf("%c[%d;%df",0x1B,y,x);
  }
 
-void connectClient(int argc, char *argv[]) {
+
+void connection(char *argv[], char * fileName) {
     system("clear");
     int n =0;
     int sockfd = 0;
@@ -36,13 +37,8 @@ void connectClient(int argc, char *argv[]) {
     int port = atoi(argv[2]); 
     serv_addr.sin_port = htons(port); // port
     char ip[50];
-if (argc < 2) 
-{
-    printf("Enter IP address to connect: ");
-    gets(ip);
-}
-else
-  strcpy(ip,argv[1]);
+
+    strcpy(ip,argv[1]);
 
     serv_addr.sin_addr.s_addr = inet_addr(ip);
 
@@ -57,7 +53,7 @@ else
     /*sending name*/
     printf("Please enter the file that you want with extension (: ");
     bzero(buffer,256);
-    fgets(buffer,256,stdin);
+    strcpy(buffer,strdup(fileName)); 
     printf("%s\n", buffer);
     n= write(sockfd,buffer,strlen(buffer)); //1 
     if( n < 0 )
@@ -105,7 +101,30 @@ else
     printf("\nFile OK....Completed\n");
     return 0;
 }
+
+void connectForFiles(char * argv[]){
+    printf("entra aca\n");
+    char buffer[256]; 
+    char *token, *string, *tofree;
+    string = strdup(argv[3]);
+    tofree = string;
+    while ((token = strsep(&string, ",")) != NULL)
+      {
+        printf("%s\n", token);
+        connection(argv, token);
+      } 
+}
+
 int main(int argc, char *argv[])
 {
-    connectClient(argc, argv);
+    printf("ARGC %d\n", argc);
+    if (argc < 3) 
+    {
+        printf("Como segundo parametro ingresar la IP y tercer parametro los archivos (si desea varios archivos, separarlos por coma)");
+        
+    }else{
+        printf("NANI\n");
+        connectForFiles(argv); 
+    }     
+    return 0;
 }
