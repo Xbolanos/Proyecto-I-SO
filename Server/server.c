@@ -14,10 +14,6 @@
 #include "../functions.c"
 extern const char * delim;
 extern struct sockaddr_in c_addr;
-
-
-extern char * pch;
-extern int indexProcess; 
 extern Process *process[50];
 
 
@@ -49,13 +45,9 @@ void * getRequest(int * arg){
     Process p; 
     p.id = 1; 
     strcpy(p.file, buffer); 
-    printf("#p.file %s\n", p.file);
     p.connfd = connfd;
-    printf("#browser %d\n",browser); 
-    p.browser = browser; 
-    printf("#p.browser %d\n",p.browser ); 
+    p.browser = browser;  
     insert(p); 
-    indexProcess++;
 
 }
 
@@ -84,20 +76,11 @@ void * SendFileToClient(Process pr)
         int size =0;
         size = st.st_size;
         strcpy(buffer, p.file); 
-        pch = strtok (buffer,"."); // esto saca chonquitos
-        int i = 0; 
-        while (pch != NULL)
-        {
-	    
-            b[i] = pch; 
-		pch = split_string(p.file,".",-1);             
-		i++; 
-            pch = strtok (NULL, ".");
-        }
-        i = i - 1; 
-        pch = b[i];
+        pch = split_string(buffer,".",-1); 
+        printf("LA MIERDA ES %s\n", pch);
+        
         printf("tipo de archivo #%s#\n", pch);
-        printf("la i es: %d\n", i);
+        
 
         printf("el tama;o es de: %d\n", size);
         bzero(bigbuffer, 10000); 
