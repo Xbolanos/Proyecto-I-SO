@@ -52,7 +52,6 @@ void connection(char *argv[], char * fileName) {
 
     printf("Connected to ip: %s : %d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
     /*sending name*/
-    printf("Please enter the file that you want with extension (: ");
     bzero(buffer,256);
     pch = strdup(fileName); 
     strcpy(buffer,pch); 
@@ -69,10 +68,7 @@ void connection(char *argv[], char * fileName) {
      /* Create file where data will be stored */
     FILE *fp;
     char fname[256];
-   
     read(sockfd, fname, 256); //2
-    printf("#2 %s\n", fname); 
-
      
     //strcat(fname,"AK");
     printf("File Name: %s\n",fname);
@@ -113,7 +109,6 @@ void connectForFiles(char * argv[]){
     tofree = string;
     while ((token = strsep(&string, ",")) != NULL)
       {
-        printf("%s\n", token);
         connection(argv, token);
       } 
 }

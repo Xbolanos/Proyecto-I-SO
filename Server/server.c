@@ -40,7 +40,7 @@ void * getRequest(int * arg){
        pch = split_string(buffer,"\n",0); 
     }
     strcpy(buffer, pch); 
-    printf("here is file normal: %s\n", buffer);
+    printf("File Name: %s\n", buffer);
     //digamos que aqui se tienen que hacer los processes
     Process p; 
     p.id = 1; 
@@ -58,16 +58,13 @@ void * SendFileToClient(Process pr)
     char * pch;
     char buffer[256];   
     char bigbuffer[10000]; 
-    const char *b[100]; // para separar chonquitos
     int connfd= p.connfd;
 
   
    /*----------------------------*/
 
     if(p.browser== 0){ // le mando esto para que sepa cual es el archivo a crear 
-        
         write(connfd, p.file,256); //2
-        printf("#2 %s\n", p.file);
     } 
    //resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo
     else{ 
@@ -77,12 +74,10 @@ void * SendFileToClient(Process pr)
         size = st.st_size;
         strcpy(buffer, p.file); 
         pch = split_string(buffer,".",-1); 
-        printf("LA MIERDA ES %s\n", pch);
-        
-        printf("tipo de archivo #%s#\n", pch);
-        
 
-        printf("el tama;o es de: %d\n", size);
+        
+        printf("Tipo de archivo #%s#\n", pch);
+        printf("Tamanno: %d\n", size);
         bzero(bigbuffer, 10000); 
    
         if (!strcmp(pch, "jpg") || !strcmp(pch, "jpeg")){ // escoje el http response correspondiente
@@ -98,64 +93,54 @@ void * SendFileToClient(Process pr)
             sprintf(bigbuffer, "%s%d\r\n\r\n", http_text_html, size);  
             printf("entro auqi\n"); 
         }
-        
-        printf("%s\n", bigbuffer);
         int len = strlen(bigbuffer);
         send(p.connfd, bigbuffer, len, 0);     // le manda el http
-       }
-        
+   }
 
-        /*hasta aqui de verdad le manda el archivo*/
-        FILE *fp = fopen(p.file,"rb");
-        printf("Nombre:%s\n", p.file);
-        if(fp==NULL)
+    /*hasta aqui de verdad le manda el archivo*/
+    FILE *fp = fopen(p.file,"rb");
+    if(fp==NULL)
+    {
+        printf("File opern error");
+        perror(fp);
+        return 1;   
+    }   
+
+    /* Read data from file and send it */
+    while(1)
+    {
+        /* First read file in chunks of 256 bytes */
+
+        unsigned char buff[1024]={0};
+        int nread = fread(buff,1,1024,fp);
+        printf("Bytes read %d \n", nread);        
+
+        /* If read was success, send data. */
+        if(nread > 0)
         {
-            printf("File opern error");
-            perror(fp);
-            return 1;   
-        }   
-
-        /* Read data from file and send it */
-        while(1)
-        {
-            /* First read file in chunks of 256 bytes */
-
-            unsigned char buff[1024]={0};
-            int nread = fread(buff,1,1024,fp);
-            printf("Bytes read %d \n", nread);        
-
-            /* If read was success, send data. */
-            if(nread > 0)
-            {
-                printf("Sending \n");
-                
-                send(p.connfd, buff, nread, 0); //3
-                printf("### lo que envia: %s\n", buff);
-            }
-            if (nread < 1024)
-            {
-                if (feof(fp))
-                {
-                    printf("End of file\n");
-                    printf("File transfer completed for id: %d\n",p.connfd);
-                    break;
-
-                }
-                if (ferror(fp))
-                    printf("Error reading\n");
-                    return 0; 
-            }
-            sleep(1);
+            printf("Sending \n");
+            send(p.connfd, buff, nread, 0); //3
         }
-        
-        fclose(fp);
-        printf("Closing Connection for id: %d\n",p.connfd);
-        close(p.connfd);
-        shutdown(p.connfd,SHUT_WR);
-        printf("end ari socket client\n");   
+        if (nread < 1024)
+        {
+            if (feof(fp))
+            {
+                printf("End of file\n");
+                printf("File transfer completed for id: %d\n",p.connfd);
+                break;
+
+            }
+            if (ferror(fp))
+                printf("Error reading\n");
+                return 0; 
+        }
+        sleep(1);
+    }
     
-    printf("pasa por aqui?\n");
-    
+    fclose(fp);
+    printf("Closing Connection for id: %d\n",p.connfd);
+    close(p.connfd);
+    shutdown(p.connfd,SHUT_WR);
     return 1;  
     
 }
@@ -195,7 +180,6 @@ void connectServer(int argc, char *argv[]){
 
     while(1)
     {   
-        printf("hola volvi\n");
         clen=sizeof(c_addr);
         printf("Waiting...\n");
         connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
@@ -206,9 +190,7 @@ void connectServer(int argc, char *argv[]){
     	}
         getRequest(&connfd);        
         fifo();
-        sleep(5); 
-        
-        printf("termino\n");
+        sleep(2); 
    }
     close(connfd);
 }
