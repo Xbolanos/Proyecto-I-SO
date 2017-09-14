@@ -22,6 +22,7 @@ void connection(char *argv[], char * fileName) {
     int bytesReceived = 0;
     char recvBuff[1024];
     char buffer[256]; 
+    char * pch; 
     memset(recvBuff, '0', sizeof(recvBuff));
     struct sockaddr_in serv_addr;
 
@@ -53,8 +54,9 @@ void connection(char *argv[], char * fileName) {
     /*sending name*/
     printf("Please enter the file that you want with extension (: ");
     bzero(buffer,256);
-    strcpy(buffer,strdup(fileName)); 
-    printf("%s\n", buffer);
+    pch = strdup(fileName); 
+    strcpy(buffer,pch); 
+    printf("#%s# len: %d\n", buffer, strlen(buffer));
     n= write(sockfd,buffer,strlen(buffer)); //1 
     if( n < 0 )
     {
@@ -67,6 +69,7 @@ void connection(char *argv[], char * fileName) {
      /* Create file where data will be stored */
     FILE *fp;
     char fname[256];
+   
     read(sockfd, fname, 256); //2
     printf("#2 %s\n", fname); 
 

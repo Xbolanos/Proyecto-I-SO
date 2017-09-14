@@ -31,9 +31,9 @@ void * getRequest(int * arg){
     int connfd=(int)*arg;
        
     //-----------the real action --------------
-
+    bzero(buffer,256); 
     read(connfd, buffer, 256); //1 
-    printf("#1 : lo que el read recibe: %s\n", buffer);
+    printf("#1 : lo que el read recibe: #%s#\n", buffer);
     // disminusa
     strcpy(str, buffer); 
     //pch = strtok (str," ");
