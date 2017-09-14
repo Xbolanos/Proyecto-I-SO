@@ -29,37 +29,19 @@ void * getRequest(int * arg){
     char str[] = ""; 
     const char *a[100]; // para separar chonquitos
     int connfd=(int)*arg;
-    ///extra ------------------
-    printf("Connection accepted and id: %d\n",connfd);
-    printf("Connected to Clent: %s:%d\n",inet_ntoa(c_addr.sin_addr),ntohs(c_addr.sin_port));       
+       
     //-----------the real action --------------
 
     read(connfd, buffer, 256); //1 
     printf("#1 : lo que el read recibe: %s\n", buffer);
     // disminusa
     strcpy(str, buffer); 
-/*    pch = split_string(str, " ", 0); 
-    if (!strcmp(pch, "GET")){
-        browser =1;
-        //estos print se pueden unificar a futuro
-        pch = split_string(str, " ", 1); 
-        printf("GET: %s\n", pch);
-    }
-    
-    strcpy(buffer, pch);  
-    pch = strtok (buffer,"\n");
-
-    strcpy(buffer, pch); 
-
-    if (browser == 1){
-        pch = strtok (buffer,"/");
-        strcpy(buffer, pch);  
-    }*/
-
-    pch = strtok (str," ");
+    //pch = strtok (str," ");
+    pch = split_string(str, " ", 0); 
     if (!strcmp(pch, "GET")){
         browser = 1; 
         strcpy(str, buffer);
+        printf("#get en %s\n", str);
         pch = split_string(str, " ", 1); 
         //estos print se pueden unificar a futuro
         printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
@@ -105,7 +87,7 @@ void * SendFileToClient(Process pr)
         write(connfd, p.file,256); //2
         printf("#2 %s\n", p.file);
     } 
-   /*//resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo*/
+   //resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo
     else{ 
         struct stat st;
         stat(p.file, &st); //esto viene de una libreria que magicamente me saca el tama;o del archivo 
@@ -188,7 +170,7 @@ void * SendFileToClient(Process pr)
                     printf("Error reading\n");
                     return 0; 
             }
-            sleep(2);
+            sleep(1);
         }
         
         fclose(fp);
@@ -249,7 +231,7 @@ void connectServer(int argc, char *argv[]){
     	}
         getRequest(&connfd);        
         fifo();
-        sleep(10); 
+        sleep(5); 
         
         printf("termino\n");
    }
