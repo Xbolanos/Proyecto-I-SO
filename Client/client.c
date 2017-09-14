@@ -47,10 +47,10 @@ void connection(char *argv[], char * fileName) {
     if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))<0)
     {
         printf("\n Error : Connect Failed \n");
-        return 1;
     }
 
     printf("Connected to ip: %s : %d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
+    printf("socket: %d\n", sockfd);
     /*sending name*/
     bzero(buffer,256);
     pch = strdup(fileName); 
@@ -110,6 +110,7 @@ void connectForFiles(char * argv[]){
     while ((token = strsep(&string, ",")) != NULL)
       {
         connection(argv, token);
+        printf("connectionForFiles\n");
       } 
 }
 
@@ -121,7 +122,6 @@ int main(int argc, char *argv[])
         printf("Como segundo parametro ingresar la IP y tercer parametro los archivos (si desea varios archivos, separarlos por coma)");
         
     }else{
-        printf("NANI\n");
         connectForFiles(argv); 
     }     
     return 0;

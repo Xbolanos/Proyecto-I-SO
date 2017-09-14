@@ -12,8 +12,6 @@
 #include "http.h"
 #include "fifo.c"
 #include "../functions.c"
-extern const char * delim;
-extern struct sockaddr_in c_addr;
 extern Process *process[50];
 
 
@@ -41,13 +39,30 @@ void * getRequest(int * arg){
     }
     strcpy(buffer, pch); 
     printf("File Name: %s\n", buffer);
+    //verificar si vale la pena meterlo
+    FILE * file;
+    file = fopen(buffer, "r");
+    printf("meme\n");
+    if (!file){
+        printf("no hay archivo D:\n");
+        printf("Closing Connection for id: %d\n",connfd);
+        if(browser == 1){
+            printf("booii\n");
+           int len = strlen(http_error);
+           send(connfd, http_error, len, 0); 
+        }
+    close(connfd); 
+    shutdown(connfd,SHUT_WR);
+        
+       return; 
+    }
     //digamos que aqui se tienen que hacer los processes
     Process p; 
     p.id = 1; 
     strcpy(p.file, buffer); 
     p.connfd = connfd;
     p.browser = browser;  
-    insert(p); 
+    SendFileToClient(p); 
 
 }
 
@@ -102,8 +117,7 @@ void * SendFileToClient(Process pr)
     if(fp==NULL)
     {
         printf("File opern error");
-        perror(fp);
-        return 1;   
+        return 0 ;   
     }   
 
     /* Read data from file and send it */
@@ -192,7 +206,7 @@ void connectServer(int argc, char *argv[]){
         fifo();
         sleep(2); 
    }
-    close(connfd);
+    
 }
 
 int main(int argc, char *argv[])
@@ -203,6 +217,7 @@ int main(int argc, char *argv[])
     	switch (atoi(argv[1])){
     		case 0:
     			printf("Sería Fifo\n");
+                connectServer(argc, argv); 
     			break;
     		case 1:
     			printf("Sería FORK\n");
@@ -216,7 +231,7 @@ int main(int argc, char *argv[])
     		default:
     			printf("Sería Fifo\n");
     	}
-    	connectServer(argc, argv);			
+    				
 
 
     }else{
