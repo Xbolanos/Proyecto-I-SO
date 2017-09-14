@@ -32,28 +32,18 @@ void * getRequest(int * arg){
        
     //-----------the real action --------------
     bzero(buffer,256); 
-    read(connfd, buffer, 256); //1 
-    printf("#1 : lo que el read recibe: #%s#\n", buffer);
+    read(connfd, buffer, 256); //1     printf("#1 : lo que el read recibe: #%s#\n", buffer);
     // disminusa
-    strcpy(str, buffer); 
-    //pch = strtok (str," ");
-    pch = split_string(str, " ", 0); 
-    if (!strcmp(pch, "GET")){
+    if (!strcmp(split_string(buffer, " ", 0), "GET")){
         browser = 1; 
-        strcpy(str, buffer);
-        printf("#get en %s\n", str);
-        pch = split_string(str, " ", 1); 
-        //estos print se pueden unificar a futuro
-        printf("Here is the file from browser: %s\n", pch); // aqui ya toma del http del browser que quiere despues del puerto  
-    }
-    
-    strcpy(buffer, pch);  
-    pch = strtok (buffer,"\n");
-    strcpy(buffer, pch); 
-    if (browser == 1){
-        pch = strtok (buffer,"/");
+        pch = split_string(buffer, " ", 1); 
         strcpy(buffer, pch);  
-    }    
+        pch = split_string(buffer, "/",1); 
+    }
+    else{
+       pch = split_string(buffer,"\n",0); 
+    }
+    strcpy(buffer, pch); 
     printf("here is file normal: %s\n", buffer);
     //digamos que aqui se tienen que hacer los processes
     Process p; 
@@ -98,8 +88,10 @@ void * SendFileToClient(Process pr)
         int i = 0; 
         while (pch != NULL)
         {
+	    
             b[i] = pch; 
-            i++; 
+		pch = split_string(p.file,".",-1);             
+		i++; 
             pch = strtok (NULL, ".");
         }
         i = i - 1; 
