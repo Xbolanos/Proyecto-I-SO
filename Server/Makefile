@@ -1,6 +1,6 @@
 
 output: server.o 
-	gcc server.o -o server
+	gcc -pthread server.o -o server
 	
 
 
