@@ -1,12 +1,4 @@
-
-output: server.o 
-	gcc -pthread server.o -o server
-	
-
-
-server.o: server.c
-	gcc -c server.c
-
-
+server: threadpool.c server.c
+	gcc -g -Wall -o server threadpool.c server.c -I. -lpthread
 clean:
 	rm *.o server

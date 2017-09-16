@@ -1,21 +1,37 @@
+#include "threadpool.h"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "structs.h"
 #include "http.h"
-#include "fifo.c"
+
+
 #include "../functions.c"
-extern Process *process[50];
+
+
+void * SendFileToClient(Process p);
 
 
 
+
+
+
+
+
+
+
+
+
+//
 void * getRequest(int * arg){
     int browser = 0; 
     char buffer[256];
@@ -260,7 +276,7 @@ void connectServerPr(int argc, char *argv[]){
     
 }
 
-void connectServerPTr(int argc, char *argv[]){
+void connectServerTr(int argc, char *argv[]){
     int connfd = 0,err;
     struct sockaddr_in serv_addr;
     int listenfd = 0,ret;
@@ -295,6 +311,7 @@ void connectServerPTr(int argc, char *argv[]){
         return -1;
     }
 
+
     while(1)
     {   
         clen=sizeof(c_addr);
@@ -305,12 +322,97 @@ void connectServerPTr(int argc, char *argv[]){
           printf("Error in accept\n");
           continue; 
         }
+
         pthread_create(&tid, NULL, &getRequest, &connfd);
         
         sleep(2); 
    }
 }
     
+
+void connectServerPTr(int argc, char *argv[]){
+    
+    struct sockaddr_in serv_addr;
+    int listenfd = 0,ret;
+    int numrv;
+    pthread_t tid; 
+    size_t clen=0;
+    int numthread=atoi(argv[3]);
+    printf("numthread: %d\n", numthread);
+    struct threadpool *pool;
+    int arr[numthread],failed_count,i = 0;
+    int currentthread=0;
+    static pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
+    static int connfd = 0,err;
+   
+
+    if ((pool = threadpool_init(numthread)) == NULL) {
+        printf("Error! Failed to create a thread pool struct.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listenfd<0)
+    {
+      printf("Error in socket creation\n");
+      exit(2);
+    }
+
+    printf("Socket retrieve success\n");
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    int port = atoi(argv[2]); 
+    serv_addr.sin_port = htons(port);
+
+    ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
+    if(ret<0)
+    {
+      printf("Error in bind\n");
+      exit(2);
+    }
+
+    if(listen(listenfd, 10) == -1)
+    {
+        printf("Failed to listen\n");
+        return -1;
+    }
+
+    while(1)
+    {   
+        printf("Entro por aca.\n");
+        clen=sizeof(c_addr);
+        printf("Waiting...\n");
+        
+        connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
+      
+        
+        if(connfd<0)
+        {
+          printf("Error in accept\n");
+          continue; 
+        }
+        printf("Entro por aca1.\n");    
+        if (i % numthread == 0) {
+            /* blocking. */
+            ret = threadpool_add_task(pool,&getRequest,&connfd,1);
+            i=0;
+        }
+        else {
+            /* non blocking. */
+            ret = threadpool_add_task(pool,&getRequest,&connfd,0);
+            i++;
+        }
+
+
+        
+        
+        printf("Entro por aca2.\n");      
+        sleep(2); 
+   }
+   threadpool_free(pool,1);
+}
+
 
 
 
@@ -330,10 +432,11 @@ int main(int argc, char *argv[])
     			break;
     		case 2:
     			printf("Sería Thread\n");
-                connectServerPTr(argc, argv);
+                connectServerTr(argc, argv);
     			break;
     		case 3:
     			printf("Sería P-Thread\n");
+                connectServerPTr(argc, argv);
     			break;
     		default:
     			printf("Sería Fifo\n");
