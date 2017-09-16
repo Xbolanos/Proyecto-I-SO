@@ -11,409 +11,21 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "structs.h"
+
+
 #include "http.h"
-
-
 #include "../functions.c"
-
+#include "structs.h"
+#include "fifo.c"
+#include "fork.c"
+#include "thread.c"
+#include "pthread.c"
 
 void * SendFileToClient(Process p);
-
-
-
-
-
-
-
-
-
-
-
-
-//
-void * getRequest(int * arg){
-    int browser = 0; 
-    char buffer[256];
-    char * pch;
-    char str[] = ""; 
-    const char *a[100]; // para separar chonquitos
-    int connfd=(int)*arg;
-       
-    //-----------the real action --------------
-    bzero(buffer,256); 
-    read(connfd, buffer, 256); //1     printf("#1 : lo que el read recibe: #%s#\n", buffer);
-    // disminusa
-    if (!strcmp(split_string(buffer, " ", 0), "GET")){
-        browser = 1; 
-        pch = split_string(buffer, " ", 1); 
-        strcpy(buffer, pch);  
-        pch = split_string(buffer, "/",1); 
-    }
-    else{
-       pch = split_string(buffer,"\n",0); 
-    }
-    strcpy(buffer, pch); 
-    printf("File Name: %s\n", buffer);
-    //verificar si vale la pena meterlo
-    FILE * file;
-    file = fopen(buffer, "r");
-    printf("meme\n");
-    if (!file){
-        printf("no hay archivo D:\n");
-        printf("Closing Connection for id: %d\n",connfd);
-        if(browser == 1){
-            printf("booii\n");
-           int len = strlen(http_error);
-           send(connfd, http_error, len, 0); 
-        }
-    close(connfd); 
-    shutdown(connfd,SHUT_WR);
-        
-       return; 
-    }
-    //digamos que aqui se tienen que hacer los processes
-    Process p; 
-    p.id = 1; 
-    strcpy(p.file, buffer); 
-    p.connfd = connfd;
-    p.browser = browser;  
-    SendFileToClient(p); 
-
-}
-
-
-void * SendFileToClient(Process pr)
-{
-    Process p=(Process)pr;
-    char * pch;
-    char buffer[256];   
-    char bigbuffer[10000]; 
-    int connfd= p.connfd;
-
-  
-   /*----------------------------*/
-
-    if(p.browser== 0){ // le mando esto para que sepa cual es el archivo a crear 
-        write(connfd, p.file,256); //2
-    } 
-   //resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo
-    else{ 
-        struct stat st;
-        stat(p.file, &st); //esto viene de una libreria que magicamente me saca el tama;o del archivo 
-        int size =0;
-        size = st.st_size;
-        strcpy(buffer, p.file); 
-        pch = split_string(buffer,".",-1); 
-
-        
-        printf("Tipo de archivo #%s#\n", pch);
-        printf("Tamanno: %d\n", size);
-        bzero(bigbuffer, 10000); 
-   
-        if (!strcmp(pch, "jpg") || !strcmp(pch, "jpeg")){ // escoje el http response correspondiente
-            sprintf(bigbuffer, "%s%d\r\n\r\n", http_image_jpeg, size);
-        }
-        else if(!strcmp(pch,"png")){
-            sprintf(bigbuffer, "%s%d\r\n\r\n", http_image_png, size);
-        }
-        else if (!strcmp(pch, "gif")){
-            sprintf(bigbuffer, "%s%d\r\n\r\n", http_image_gif, size);
-        }
-        else{
-            sprintf(bigbuffer, "%s%d\r\n\r\n", http_text_html, size);  
-            printf("entro auqi\n"); 
-        }
-        int len = strlen(bigbuffer);
-        send(p.connfd, bigbuffer, len, 0);     // le manda el http
-   }
-
-    /*hasta aqui de verdad le manda el archivo*/
-    FILE *fp = fopen(p.file,"rb");
-    if(fp==NULL)
-    {
-        printf("File opern error");
-        return 0 ;   
-    }   
-
-    /* Read data from file and send it */
-    while(1)
-    {
-        /* First read file in chunks of 256 bytes */
-
-        unsigned char buff[1024]={0};
-        int nread = fread(buff,1,1024,fp);
-        printf("Bytes read %d \n", nread);        
-
-        /* If read was success, send data. */
-        if(nread > 0)
-        {
-            printf("Sending \n");
-            send(p.connfd, buff, nread, 0); //3
-        }
-        if (nread < 1024)
-        {
-            if (feof(fp))
-            {
-                printf("End of file\n");
-                printf("File transfer completed for id: %d\n",p.connfd);
-                break;
-
-            }
-            if (ferror(fp))
-                printf("Error reading\n");
-                return 0; 
-        }
-        sleep(1);
-    }
-    
-    fclose(fp);
-    printf("Closing Connection for id: %d\n",p.connfd);
-    close(p.connfd);
-    shutdown(p.connfd,SHUT_WR);
-    return 1;  
-    
-}
-void connectServer(int argc, char *argv[]){
-	int connfd = 0,err;
-    struct sockaddr_in serv_addr;
-    int listenfd = 0,ret;
-    int numrv;
-    size_t clen=0;
-
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listenfd<0)
-	{
-	  printf("Error in socket creation\n");
-	  exit(2);
-	}
-
-    printf("Socket retrieve success\n");
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    int port = atoi(argv[2]); 
-    serv_addr.sin_port = htons(port);
-
-    ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
-    if(ret<0)
-    {
-      printf("Error in bind\n");
-      exit(2);
-    }
-
-    if(listen(listenfd, 10) == -1)
-    {
-        printf("Failed to listen\n");
-        return -1;
-    }
-
-    while(1)
-    {   
-        clen=sizeof(c_addr);
-        printf("Waiting...\n");
-        connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
-        if(connfd<0)
-        {
-    	  printf("Error in accept\n");
-    	  continue;	
-    	}
-        getRequest(&connfd);
-        sleep(2); 
-   }
-    
-}
-
-void connectServerPr(int argc, char *argv[]){
-    int connfd = 0,err;
-    struct sockaddr_in serv_addr;
-    int listenfd = 0,ret;
-    int numrv;
-    size_t clen=0;
-
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listenfd<0)
-    {
-      printf("Error in socket creation\n");
-      exit(2);
-    }
-
-    printf("Socket retrieve success\n");
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    int port = atoi(argv[2]); 
-    serv_addr.sin_port = htons(port);
-
-    ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
-    if(ret<0)
-    {
-      printf("Error in bind\n");
-      exit(2);
-    }
-
-    if(listen(listenfd, 10) == -1)
-    {
-        printf("Failed to listen\n");
-        return -1;
-    }
-
-    while(1)
-    {   
-        clen=sizeof(c_addr);
-        printf("Waiting...\n");
-        connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
-        if(connfd<0)
-        {
-          printf("Error in accept\n");
-          continue; 
-        }
-        getRequest(&connfd);
-        pid_t  pid = fork(); 
-        
-        sleep(2); 
-   }
-    
-}
-
-void connectServerTr(int argc, char *argv[]){
-    int connfd = 0,err;
-    struct sockaddr_in serv_addr;
-    int listenfd = 0,ret;
-    int numrv;
-    pthread_t tid; 
-    size_t clen=0;
-
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listenfd<0)
-    {
-      printf("Error in socket creation\n");
-      exit(2);
-    }
-
-    printf("Socket retrieve success\n");
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    int port = atoi(argv[2]); 
-    serv_addr.sin_port = htons(port);
-
-    ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
-    if(ret<0)
-    {
-      printf("Error in bind\n");
-      exit(2);
-    }
-
-    if(listen(listenfd, 10) == -1)
-    {
-        printf("Failed to listen\n");
-        return -1;
-    }
-
-
-    while(1)
-    {   
-        clen=sizeof(c_addr);
-        printf("Waiting...\n");
-        connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
-        if(connfd<0)
-        {
-          printf("Error in accept\n");
-          continue; 
-        }
-
-        pthread_create(&tid, NULL, &getRequest, &connfd);
-        
-        sleep(2); 
-   }
-}
-    
-
-void connectServerPTr(int argc, char *argv[]){
-    
-    struct sockaddr_in serv_addr;
-    int listenfd = 0,ret;
-    int numrv;
-    pthread_t tid; 
-    size_t clen=0;
-    int numthread=atoi(argv[3]);
-    printf("numthread: %d\n", numthread);
-    struct threadpool *pool;
-    int arr[numthread],failed_count,i = 0;
-    int currentthread=0;
-    static pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
-    static int connfd = 0,err;
-   
-
-    if ((pool = threadpool_init(numthread)) == NULL) {
-        printf("Error! Failed to create a thread pool struct.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listenfd<0)
-    {
-      printf("Error in socket creation\n");
-      exit(2);
-    }
-
-    printf("Socket retrieve success\n");
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    int port = atoi(argv[2]); 
-    serv_addr.sin_port = htons(port);
-
-    ret=bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
-    if(ret<0)
-    {
-      printf("Error in bind\n");
-      exit(2);
-    }
-
-    if(listen(listenfd, 10) == -1)
-    {
-        printf("Failed to listen\n");
-        return -1;
-    }
-
-    while(1)
-    {   
-        printf("Entro por aca.\n");
-        clen=sizeof(c_addr);
-        printf("Waiting...\n");
-        
-        connfd = accept(listenfd, (struct sockaddr*)&c_addr,&clen);
-      
-        
-        if(connfd<0)
-        {
-          printf("Error in accept\n");
-          continue; 
-        }
-        printf("Entro por aca1.\n");    
-        if (i % numthread == 0) {
-            /* blocking. */
-            ret = threadpool_add_task(pool,&getRequest,&connfd,1);
-            i=0;
-        }
-        else {
-            /* non blocking. */
-            ret = threadpool_add_task(pool,&getRequest,&connfd,0);
-            i++;
-        }
-
-
-        
-        
-        printf("Entro por aca2.\n");      
-        sleep(2); 
-   }
-   threadpool_free(pool,1);
-}
-
-
+extern void fifoImplementation(int argc, char *argv[]);
+extern void forkImplementation(int argc, char *argv[]);
+extern void threadImplementation(int argc, char *argv[]);
+extern void pthreadImplentation(int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -424,23 +36,23 @@ int main(int argc, char *argv[])
     	switch (atoi(argv[1])){
     		case 0:
     			printf("Sería Fifo\n");
-                connectServer(argc, argv); 
+                fifoImplementation(argc, argv); 
     			break;
     		case 1:
     			printf("Sería FORK\n");
-                connectServerPr(argc, argv);
+                forkImplementation(argc, argv);
     			break;
     		case 2:
     			printf("Sería Thread\n");
-                connectServerTr(argc, argv);
+                threadImplementation(argc, argv);
     			break;
     		case 3:
     			printf("Sería P-Thread\n");
-                connectServerPTr(argc, argv);
+                pthreadImplementation(argc, argv);
     			break;
     		default:
     			printf("Sería Fifo\n");
-                connectServer(argc, argv); 
+                fifoImplementation(argc, argv); 
     	}
     				
 

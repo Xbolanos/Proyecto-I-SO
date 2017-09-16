@@ -27,15 +27,4 @@ char * split_string(char * str, char *delimiter, int index){
 	return array[index];
 
 }
-/*
-int main(int argc, char *argv[])
-{
-	char* array[5];
-	char * var=split_string("abc,def,ghi", ",", -1);
-	printf("Resultado: %s\n", split_string("abc,def,ghi", ",", 0));
-	 memmove(var, var+1, strlen(var));
-	 printf("Var:%s\n", var);
-   
-    
-    return 0;
-}*/
+
