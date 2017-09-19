@@ -43,12 +43,18 @@ void * getRequest(int * arg){
         strcpy(buffer, pch);  
         pch = strdup(makeSpaceHTTP(buffer, "%20")); 
         bzero(buffer,256);
-        strcpy(buffer, pch);  
-        pch = split_string(buffer, "/",1); 
+        strcat(buffer, ".");
+        strcat(buffer, pch);  
+        pch = buffer; 
+        printf("PCHHHHHHHHHHHHHH: %s\n", buffer); 
     }
     else{
        printf("entra al else de los splits y el valor es #%s#\n", buffer);
        pch = split_string(buffer,"\n",0); 
+       bzero(buffer,256);
+       strcat(buffer, "./");
+       strcat(buffer, pch);
+       pch = buffer; 
     }
     strcpy(buffer, pch); 
     printf("File Name: %s\n", buffer);
@@ -93,7 +99,8 @@ void * SendFileToClient(Process pr)
    /*----------------------------*/
 
     if(p.browser== 0){ // le mando esto para que sepa cual es el archivo a crear 
-        n = write(connfd, p.file,256); //2
+        char * name = split_string(p.file, "/", -1); 
+        n = write(connfd, name,256); //2
         if (n <= 0){
             printf("Error: en enviar el nombre al socket\n");
             return 0; 
