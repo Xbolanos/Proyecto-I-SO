@@ -101,11 +101,22 @@ void connection(char *argv[], char * fileName) {
     return 0;
 }
 
-void connectForFiles(char * argv[]){
+void connectForFiles(int argc, char * argv[]){
     printf("entra aca\n");
     char buffer[256]; 
+    bzero(buffer, 256); 
     char *token, *string, *tofree;
-    string = strdup(argv[3]);
+    int i = 3; 
+    strcat(buffer, argv[3]); //todo esto hasta donde indique es para agarrar todo lo de la linea de comando 
+    i++;
+    while (argc > i){
+        strcat(buffer, " "); 
+        strcat(buffer, argv[i]); 
+        i++; 
+    }
+    //string = strdup(argv[3]);
+    string = buffer;
+    printf("el string es: #%s#\n", string); 
     tofree = string;
     while ((token = strsep(&string, ",")) != NULL)
       {
@@ -122,7 +133,7 @@ int main(int argc, char *argv[])
         printf("Como segundo parametro ingresar la IP y tercer parametro los archivos (si desea varios archivos, separarlos por coma)");
         
     }else{
-        connectForFiles(argv); 
+        connectForFiles(argc, argv); 
     }     
     return 0;
 }

@@ -39,10 +39,15 @@ void * getRequest(int * arg){
     if (!strcmp(split_string(buffer, " ", 0), "GET")){
         browser = 1; 
         pch = split_string(buffer, " ", 1); 
+        bzero(buffer,256);
+        strcpy(buffer, pch);  
+        pch = strdup(makeSpaceHTTP(buffer, "%20")); 
+        bzero(buffer,256);
         strcpy(buffer, pch);  
         pch = split_string(buffer, "/",1); 
     }
     else{
+       printf("entra al else de los splits y el valor es #%s#\n", buffer);
        pch = split_string(buffer,"\n",0); 
     }
     strcpy(buffer, pch); 
@@ -82,12 +87,17 @@ void * SendFileToClient(Process pr)
     char buffer[256];   
     char bigbuffer[10000]; 
     int connfd= p.connfd;
+    int n = 0; //este n lo uso para saber si salio bien el send write 
 
   
    /*----------------------------*/
 
     if(p.browser== 0){ // le mando esto para que sepa cual es el archivo a crear 
-        write(connfd, p.file,256); //2
+        n = write(connfd, p.file,256); //2
+        if (n <= 0){
+            printf("Error: en enviar el nombre al socket\n");
+            return 0; 
+        }
     } 
    //resumidamente toooodo este bloque es para averiguar la extension, y por ello se redirecciona a los ifs de abajo
     else{ 
@@ -141,7 +151,12 @@ void * SendFileToClient(Process pr)
         if(nread > 0)
         {
             printf("Sending \n");
-            send(p.connfd, buff, nread, 0); //3
+            n = send(p.connfd, buff, nread, MSG_NOSIGNAL); //3
+            if (n <= 0){
+                printf("Warning: Connection for id: %d closed before spected\n", connfd);
+                printf("Waiting\n");
+                return 0; 
+            }
         }
         if (nread < 1024)
         {
