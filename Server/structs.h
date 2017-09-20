@@ -40,16 +40,24 @@ void * getRequest(int * arg){
         browser = 1; 
         pch = split_string(buffer, " ", 1); 
         bzero(buffer,256);
-        strcpy(buffer, pch);  
+        strcpy(buffer, pch);
+        if(!strcmp(buffer, "/")){
+            int len = strlen(http_error);
+           read(connfd, buffer, 256); 
+           int n = send(connfd, http_error, len,0); 
+           sleep(1); 
+           printf("lo q le mando: %s\n", http_error);
+           close(connfd); 
+           shutdown(connfd,SHUT_WR);
+        
+        }  
         pch = strdup(makeSpaceHTTP(buffer, "%20")); 
         bzero(buffer,256);
         strcat(buffer, ".");
         strcat(buffer, pch);  
-        pch = buffer; 
-        printf("PCHHHHHHHHHHHHHH: %s\n", buffer); 
+        pch = buffer;
     }
     else{
-       printf("entra al else de los splits y el valor es #%s#\n", buffer);
        pch = split_string(buffer,"\n",0); 
        bzero(buffer,256);
        strcat(buffer, "./");
@@ -63,15 +71,23 @@ void * getRequest(int * arg){
     file = fopen(buffer, "r");
     printf("meme\n");
     if (!file){
-        printf("no hay archivo D:\n");
+        printf("No file available\n");
         printf("Closing Connection for id: %d\n",connfd);
         if(browser == 1){
-            printf("booii\n");
+           printf("booii\n");
            int len = strlen(http_error);
-           send(connfd, http_error, len, 0); 
+           read(connfd, buffer, 256); 
+           int n = send(connfd, http_error, len,0); 
+           sleep(1); 
+           printf("lo q le mando: %s\n", http_error);
+           close(connfd); 
+           shutdown(connfd,SHUT_WR);
         }
-    close(connfd); 
-    shutdown(connfd,SHUT_WR);
+        else{
+           close(connfd); 
+           shutdown(connfd,SHUT_WR); 
+        }
+    
         
        return; 
     }
@@ -119,7 +135,7 @@ void * SendFileToClient(Process pr)
         printf("Tipo de archivo #%s#\n", pch);
         printf("Tamanno: %d\n", size);
         bzero(bigbuffer, 10000); 
-   
+
         if (!strcmp(pch, "jpg") || !strcmp(pch, "jpeg")){ // escoje el http response correspondiente
             sprintf(bigbuffer, "%s%d\r\n\r\n", http_image_jpeg, size);
         }
@@ -141,7 +157,8 @@ void * SendFileToClient(Process pr)
     FILE *fp = fopen(p.file,"rb");
     if(fp==NULL)
     {
-        printf("File opern error");
+        printf("File open error");
+
         return 0 ;   
     }   
 

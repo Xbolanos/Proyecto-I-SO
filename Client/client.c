@@ -46,16 +46,14 @@ void connection(char *argv[], char * fileName) {
     /* Attempt a connection */
     if(connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))<0)
     {
-        printf("\n Error : Connect Failed \n");
+        printf("Error : Connect Failed \n");
     }
 
     printf("Connected to ip: %s : %d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
-    printf("socket: %d\n", sockfd);
     /*sending name*/
     bzero(buffer,256);
     pch = strdup(fileName); 
     strcpy(buffer,pch); 
-    printf("#%s# len: %d\n", buffer, strlen(buffer));
     n= write(sockfd,buffer,strlen(buffer)); //1 
     if( n < 0 )
     {
@@ -102,7 +100,6 @@ void connection(char *argv[], char * fileName) {
 }
 
 void connectForFiles(int argc, char * argv[]){
-    printf("entra aca\n");
     char buffer[256]; 
     bzero(buffer, 256); 
     char *token, *string, *tofree;
@@ -115,8 +112,7 @@ void connectForFiles(int argc, char * argv[]){
         i++; 
     }
     //string = strdup(argv[3]);
-    string = buffer;
-    printf("el string es: #%s#\n", string); 
+    string = buffer; 
     tofree = string;
     while ((token = strsep(&string, ",")) != NULL)
       {
@@ -127,13 +123,25 @@ void connectForFiles(int argc, char * argv[]){
 
 int main(int argc, char *argv[])
 {
-    printf("ARGC %d\n", argc);
+    
     if (argc < 3) 
     {
-        printf("Como segundo parametro ingresar la IP y tercer parametro los archivos (si desea varios archivos, separarlos por coma)");
-        
+        printf("*Para la ejecución del programa se debe ingresar:\n");
+        printf("  	-Como segundo parámetro ingresar el número de IP \n");
+        printf("	-Como tercer parámetro el número de puerto. \n");
+        printf("	-Como cuarto parámetro el nombre de los archivos. (si desea varios archivos, debe separarlos por coma.)\n");
+        printf("*Ejemplo:\n");
+        printf("	./client 127.0.0.1 5000 minion.jpg \n");
     }else{
-        connectForFiles(argc, argv); 
+    	char *endptr;
+   		int value1 = strtol(argv[2], &endptr, 10);
+   
+	
+    	if(*endptr == '\0'){
+    		connectForFiles(argc, argv); 
+    	}else{
+    		printf("**ERROR: El puerto debe de ser un número de 4 dígitos**\n");
+    	}
     }     
     return 0;
 }
