@@ -32,11 +32,12 @@ extern void pthreadImplentation(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
    	char *endptr;
-   	int value1 = strtol(argv[1], &endptr, 10);
+   
    
 	
 	  
-    if(argc>=3){ 	
+    if(argc>=3){ 
+    	int value1 = strtol(argv[1], &endptr, 10);	
     	if (*endptr == '\0'){
 	        int value2= strtol(argv[2], &endptr, 1);
 	        if (*endptr == '\0'){
