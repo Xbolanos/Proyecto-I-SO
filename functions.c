@@ -23,7 +23,7 @@ char * split_string(char * str, char *delimiter, int index){
 	  }
 	  //free(tofree);
 	}
-	printf("%s\n", array[index]);
+	//printf("%s\n", array[index]);
 	return array[index];
 
 }

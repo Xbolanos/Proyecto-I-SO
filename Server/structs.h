@@ -46,7 +46,7 @@ void * getRequest(int * arg){
            read(connfd, buffer, 256); 
            int n = send(connfd, http_error, len,0); 
            sleep(1); 
-           printf("lo q le mando: %s\n", http_error);
+           //printf("lo q le mando: %s\n", http_error);
            close(connfd); 
            shutdown(connfd,SHUT_WR);
         
@@ -69,17 +69,17 @@ void * getRequest(int * arg){
     //verificar si vale la pena meterlo
     FILE * file;
     file = fopen(buffer, "r");
-    printf("meme\n");
+    
     if (!file){
         printf("No file available\n");
         printf("Closing Connection for id: %d\n",connfd);
         if(browser == 1){
-           printf("booii\n");
+           
            int len = strlen(http_error);
            read(connfd, buffer, 256); 
            int n = send(connfd, http_error, len,0); 
            sleep(1); 
-           printf("lo q le mando: %s\n", http_error);
+           
            close(connfd); 
            shutdown(connfd,SHUT_WR);
         }
@@ -132,8 +132,7 @@ void * SendFileToClient(Process pr)
         pch = split_string(buffer,".",-1); 
 
         
-        printf("Tipo de archivo #%s#\n", pch);
-        printf("Tamanno: %d\n", size);
+  
         bzero(bigbuffer, 10000); 
 
         if (!strcmp(pch, "jpg") || !strcmp(pch, "jpeg")){ // escoje el http response correspondiente
@@ -147,7 +146,7 @@ void * SendFileToClient(Process pr)
         }
         else{
             sprintf(bigbuffer, "%s%d\r\n\r\n", http_text_html, size);  
-            printf("entro auqi\n"); 
+          
         }
         int len = strlen(bigbuffer);
         send(p.connfd, bigbuffer, len, 0);     // le manda el http
@@ -163,18 +162,19 @@ void * SendFileToClient(Process pr)
     }   
 
     /* Read data from file and send it */
+    printf("Sending ...\n");
     while(1)
     {
         /* First read file in chunks of 256 bytes */
 
         unsigned char buff[1024]={0};
         int nread = fread(buff,1,1024,fp);
-        printf("Bytes read %d \n", nread);        
+        //printf("Bytes read %d \n", nread);        
 
         /* If read was success, send data. */
         if(nread > 0)
         {
-            printf("Sending \n");
+            
             n = send(p.connfd, buff, nread, MSG_NOSIGNAL); //3
             if (n <= 0){
                 printf("Warning: Connection for id: %d closed before spected\n", connfd);

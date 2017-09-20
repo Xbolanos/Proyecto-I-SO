@@ -46,7 +46,7 @@ void pthreadImplementation(int argc, char *argv[]){
 
     while(1)
     {   
-        printf("Entro por aca.\n");
+        
         clen=sizeof(c_addr);
         printf("Waiting...\n");
         
@@ -58,18 +58,18 @@ void pthreadImplementation(int argc, char *argv[]){
           printf("Error in accept\n");
           continue; 
         }
-        printf("Entro por aca1.\n");    
+         
         if (i % numthread == 0) {
-            /* blocking. */
+           
             ret = threadpool_add_task(pool,&getRequest,&connfd,1);
             i=0;
         }
         else {
-            /* non blocking. */
+         
             ret = threadpool_add_task(pool,&getRequest,&connfd,0);
             i++;
         }  
-        printf("Entro por aca2.\n");      
+       
         sleep(2); 
    }
    threadpool_free(pool,1);
